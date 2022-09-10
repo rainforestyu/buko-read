@@ -5,7 +5,7 @@ Packages underneath core/ provide a (relatively) stable, low-level API
 to carry out most IPFS-related tasks.  For more details on the other
 interfaces and how core/... fits into the bigger IPFS picture, see:
 
-  $ godoc github.com/ipfs/go-ipfs
+	$ godoc github.com/ipfs/go-ipfs
 */
 package core
 
@@ -58,17 +58,19 @@ import (
 var log = logging.Logger("core")
 
 // IpfsNode is IPFS Core module. It represents an IPFS instance.
+// 核心结构，节点。
 type IpfsNode struct {
 
 	// Self
+	// 节点ID,为一个独立的String
 	Identity peer.ID // the local node's identity
-
+	// 存储仓库,所有的文件都存储在里面.
 	Repo repo.Repo
 
 	// Local node
 	Pinning         pin.Pinner             // the pinning manager
 	Mounts          Mounts                 `optional:"true"` // current mount state, if any.
-	PrivateKey      ic.PrivKey             `optional:"true"` // the local node's private Key
+	PrivateKey      ic.PrivKey             `optional:"true"` // the local node's private Key --节点的私钥
 	PNetFingerprint libp2p.PNetFingerprint `optional:"true"` // fingerprint of private network
 
 	// Services
@@ -92,7 +94,7 @@ type IpfsNode struct {
 	Filters         *ma.Filters             `optional:"true"`
 	Bootstrapper    io.Closer               `optional:"true"` // the periodic bootstrapper
 	Routing         irouting.TieredRouter   `optional:"true"` // the routing system. recommend ipfs-dht
-	DNSResolver     *madns.Resolver         // the DNS resolver
+	DNSResolver     *madns.Resolver         // the DNS resolver 解析器,从url中获取出数据CID
 	Exchange        exchange.Interface      // the block exchange + strategy (bitswap)
 	Namesys         namesys.NameSystem      // the name system, resolves paths to hashes
 	Provider        provider.System         // the value provider system
@@ -103,15 +105,15 @@ type IpfsNode struct {
 	PubSub   *pubsub.PubSub             `optional:"true"`
 	PSRouter *psrouter.PubsubValueStore `optional:"true"`
 
-	DHT       *ddht.DHT       `optional:"true"`
+	DHT       *ddht.DHT       `optional:"true"` //DHT分布式哈希表
 	DHTClient routing.Routing `name:"dhtc" optional:"true"`
 
 	P2P *p2p.P2P `optional:"true"`
 
 	Process goprocess.Process
-	ctx     context.Context
+	ctx     context.Context // 上下文
 
-	stop func() error
+	stop func() error // 优雅关闭函数
 
 	// Flags
 	IsOnline bool `optional:"true"` // Online is set when networking is enabled.

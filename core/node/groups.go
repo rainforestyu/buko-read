@@ -105,6 +105,7 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		//
 		// We should consider disabling it by default if the dht is set
 		// to dhtclient.
+		// 仅当打开NAT服务时,libp2p才开启穿透服务,默认是开启的.
 		fallthrough
 	case config.AutoNATServiceEnabled:
 		autonat = fx.Provide(libp2p.AutoNATService(cfg.AutoNAT.Throttle))
