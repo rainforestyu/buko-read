@@ -133,7 +133,7 @@ type delegatedRouterOut struct {
 	fx.Out
 
 	Routers       []Router                 `group:"routers,flatten"`
-	ContentRouter []routing.ContentRouting `group:"content-routers,flatten"`
+	ContentRouter []routing.ContentRouting `group:"content-routers,flatten"` // 这里表示使用的路由接口数组
 }
 
 func DelegatedRouting(routers map[string]config.Router) interface{} {
