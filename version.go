@@ -18,6 +18,7 @@ const ApiVersion = "/kubo/" + CurrentVersionNumber + "/"
 // GetUserAgentVersion is the libp2p user agent used by go-ipfs.
 //
 // Note: This will end in `/` when no commit is available. This is expected.
+// 获取返回客户端Agent字符串
 func GetUserAgentVersion() string {
 	userAgent := "kubo/" + CurrentVersionNumber + "/" + CurrentCommit
 	if userAgentSuffix != "" {

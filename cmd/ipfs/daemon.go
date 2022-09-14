@@ -655,7 +655,7 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 		corehttp.CommandsOption(*cctx),
 		corehttp.WebUIOption,
 		gatewayOpt,
-		corehttp.VersionOption(),
+		corehttp.VersionOption(), // 增加程序版本处理函数
 		defaultMux("/debug/vars"),
 		defaultMux("/debug/pprof/"),
 		defaultMux("/debug/stack"),
