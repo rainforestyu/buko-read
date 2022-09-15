@@ -41,6 +41,7 @@ func RmBlocks(ctx context.Context, blocks bs.GCBlockstore, pins pin.Pinner, cids
 	go func() {
 		defer close(out)
 
+		// 将上下文加锁
 		unlocker := blocks.GCLock(ctx)
 		defer unlocker.Unlock(ctx)
 

@@ -47,6 +47,7 @@ func toRawCids(set *cid.Set) (*cid.Set, error) {
 //
 // The routine then iterates over every block in the blockstore and
 // deletes any block that is not found in the marked set.
+// 这里的GC,是指清理数据存储中的
 func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn pin.Pinner, bestEffortRoots []cid.Cid) <-chan Result {
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -92,7 +93,7 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 
 		errors := false
 		var removed uint64
-
+		// 这里无限循环
 	loop:
 		for ctx.Err() == nil { // select may not notice that we're "done".
 			select {
