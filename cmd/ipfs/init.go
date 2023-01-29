@@ -250,6 +250,7 @@ func initializeIpnsKeyspace(repoRoot string) error {
 
 	// pin recursively because this might already be pinned
 	// and doing a direct pin would throw an error in that case
+	// 启动固定服务,保证文件的可访问性(仅本地)
 	err = nd.Pinning.Pin(ctx, emptyDir, true)
 	if err != nil {
 		return err
