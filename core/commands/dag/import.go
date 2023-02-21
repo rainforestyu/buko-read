@@ -43,6 +43,7 @@ func dagImport(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment
 	// This is especially important for use cases like dagger:
 	//    ipfs dag import $( ... | ipfs-dagger --stdout=carfifos )
 	//
+	// 这里也就只用了BlockStore仓库
 	unlocker := node.Blockstore.PinLock(req.Context)
 	defer unlocker.Unlock(req.Context)
 

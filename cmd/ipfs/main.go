@@ -159,7 +159,7 @@ func mainRet() (exitCode int) {
 				if err != nil { // repo is owned by the node
 					return nil, err
 				}
-
+				// 实际上这里只返回了Repo仓库,
 				// ok everything is good. set it on the invocation (for ownership)
 				// and return it.
 				n, err = core.NewNode(ctx, &core.BuildCfg{
