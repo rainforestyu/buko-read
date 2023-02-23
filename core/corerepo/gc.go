@@ -43,6 +43,7 @@ func NewGC(n *core.IpfsNode) (*GC, error) {
 		if err := r.SetConfigKey("Datastore.StorageMax", "10GB"); err != nil {
 			return nil, err
 		}
+		// 这里用了GB这种人容易理解的,后面就要用humanize去转换为byte
 		cfg.Datastore.StorageMax = "10GB"
 	}
 	if cfg.Datastore.StorageGCWatermark == 0 {
