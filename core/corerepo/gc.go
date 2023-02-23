@@ -84,6 +84,7 @@ func BestEffortRoots(filesRoot *mfs.Root) ([]cid.Cid, error) {
 	return []cid.Cid{rootDag.Cid()}, nil
 }
 
+// GarbageCollect 垃圾收集过程,调用GC方法访问仓库
 func GarbageCollect(n *core.IpfsNode, ctx context.Context) error {
 	roots, err := BestEffortRoots(n.FilesRoot)
 	if err != nil {
