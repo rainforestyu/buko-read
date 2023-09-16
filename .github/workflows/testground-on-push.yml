@@ -27,7 +27,7 @@ jobs:
             plan_directory: testplans/bitswap
             composition_file: testplans/bitswap/_compositions/large-k8s.toml
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: testground run
         uses: testground/testground-github-action@v1
         timeout-minutes: 5
