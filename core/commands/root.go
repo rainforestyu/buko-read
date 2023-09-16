@@ -16,7 +16,10 @@ import (
 
 var log = logging.Logger("core/commands")
 
-var ErrNotOnline = errors.New("this command must be run in online mode. Try running 'ipfs daemon' first")
+var (
+	ErrNotOnline       = errors.New("this command must be run in online mode. Try running 'ipfs daemon' first")
+	ErrSelfUnsupported = errors.New("finding your own node in the DHT is currently not supported")
+)
 
 const (
 	RepoDirOption    = "repo-dir"
@@ -25,7 +28,7 @@ const (
 	DebugOption      = "debug"
 	LocalOption      = "local" // DEPRECATED: use OfflineOption
 	OfflineOption    = "offline"
-	ApiOption        = "api"
+	ApiOption        = "api" //nolint
 )
 
 var Root = &cmds.Command{
@@ -118,7 +121,6 @@ The CLI will exit with one of the following values:
 	},
 }
 
-// commandsDaemonCmd is the "ipfs commands" command for daemon
 var CommandsDaemonCmd = CommandsCmd(Root)
 
 var rootSubcommands = map[string]*cmds.Command{

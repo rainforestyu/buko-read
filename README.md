@@ -1,24 +1,29 @@
-# kubo
+<h1 align="center">
+<img src="https://ipfs.io/ipfs/QmTtCH31LdGV4LjRm5FNmnw6hUwZq1Z1YXtjeNKHBeaRcQ/kubo-logo.png" alt="Kubo logo" title="Kubo logo" width="200">
+<br>
+Kubo: IPFS Implementation in GO
+</h1>
+<p align="center" style="font-size: 1.2rem;">The first implementation of IPFS.</p>
 
-> the oldest IPFS implementation, previously known as "go-ipfs"
-
-![kubo, an IPFS node in Go](https://ipfs.io/ipfs/bafykbzacecaesuqmivkauix25v6i6xxxsvsrtxknhgb5zak3xxsg2nb4dhs2u/ipfs.go.png)
+<hr />
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square&cacheSeconds=3600)](https://protocol.ai)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square&cacheSeconds=3600)](https://godoc.org/github.com/ipfs/kubo)
-[![CircleCI](https://img.shields.io/circleci/build/github/ipfs/kubo?style=flat-square&cacheSeconds=3600)](https://circleci.com/gh/ipfs/kubo)
 
 ## What is Kubo?
 
-Kubo (go-ipfs) the earliest and most widely used implementation of IPFS.
+Kubo was the first IPFS implementation and is the most widely used one today. Implementing the *Interplanetary Filesystem* - the Web3 standard for content-addressing, interoperable with HTTP. Thus powered by IPLD's data models and the libp2p for network communication. Kubo is written in Go.
 
-It includes:
-- an IPFS daemon server
-- extensive [command line tooling](https://docs.ipfs.tech/reference/kubo/cli/)
-- an [HTTP Gateway](https://docs.ipfs.tech/reference/http/gateway/) (`/ipfs/`, `/ipns/`) for serving content to HTTP browsers
-- an [HTTP RPC API](https://docs.ipfs.tech/reference/kubo/rpc/) (`/api/v0`) for controlling the daemon node
+Featureset
+- Runs an IPFS-Node as a network service
+- [Command Line Interface](https://docs.ipfs.tech/reference/kubo/cli/) to IPFS-Nodes
+- Local [Web2-to-Web3 HTTP Gateway functionality](https://github.com/ipfs/specs/tree/main/http-gateways#readme)
+- HTTP RPC API (`/api/v0`) to access and control the daemon
+- IPFS's internal Webgui can be used to manage the Kubo nodes
 
-Note: [other implementations exist](https://docs.ipfs.tech/basics/ipfs-implementations/).
+### Other implementations
+
+See [List](https://docs.ipfs.tech/basics/ipfs-implementations/)
 
 ## What is IPFS?
 
@@ -33,7 +38,7 @@ Before opening an issue, consider using one of the following locations to ensure
   - Exploration of new ideas in [ipfs/notes issues](https://github.com/ipfs/notes/issues).
   - Ask questions and meet the rest of the community at the [IPFS Forum](https://discuss.ipfs.tech).
   - Or [chat with us](https://docs.ipfs.tech/community/chat/).
- 
+
 [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCdjsUXJ3QawK4O5L1kqqsew?label=Subscribe%20IPFS&style=social&cacheSeconds=3600)](https://www.youtube.com/channel/UCdjsUXJ3QawK4O5L1kqqsew) [![Follow @IPFS on Twitter](https://img.shields.io/twitter/follow/IPFS?style=social&cacheSeconds=3600)](https://twitter.com/IPFS)
 
 ## Next milestones
@@ -48,8 +53,8 @@ Before opening an issue, consider using one of the following locations to ensure
 - [Next milestones](#next-milestones)
 - [Table of Contents](#table-of-contents)
 - [Security Issues](#security-issues)
+- [Minimal System Requirements](#minimal-system-requirements)
 - [Install](#install)
-  - [System Requirements](#system-requirements)
   - [Docker](#docker)
   - [Official prebuilt binaries](#official-prebuilt-binaries)
     - [Updating](#updating)
@@ -62,13 +67,13 @@ Before opening an issue, consider using one of the following locations to ensure
     - [openSUSE](#opensuse)
     - [Guix](#guix)
     - [Snap](#snap)
-  - [Unofficial MacOS packages](#unofficial-macos-packages)
-    - [MacPorts](#macports)
-    - [Nix](#nix-1)
-    - [Homebrew](#homebrew)  
   - [Unofficial Windows packages](#unofficial-windows-packages)
     - [Chocolatey](#chocolatey)
     - [Scoop](#scoop)
+  - [Unofficial MacOS packages](#unofficial-macos-packages)
+    - [MacPorts](#macports)
+    - [Nix](#nix-macos)
+    - [Homebrew](#homebrew)
   - [Build from Source](#build-from-source)
     - [Install Go](#install-go)
     - [Download and Compile IPFS](#download-and-compile-ipfs)
@@ -94,18 +99,13 @@ Before opening an issue, consider using one of the following locations to ensure
 
 Please follow [`SECURITY.md`](SECURITY.md).
 
+### Minimal System Requirements
+
+IPFS can run on most Linux, macOS, and Windows systems. We recommend running it on a machine with at least 4 GB of RAM and 2 CPU cores (kubo is highly parallel). On systems with less memory, it may not be completely stable, and you run on your own risk.
+
 ## Install
 
 The canonical download instructions for IPFS are over at: https://docs.ipfs.tech/install/. It is **highly recommended** you follow those instructions if you are not interested in working on IPFS development.
-
-### System Requirements
-
-IPFS can run on most Linux, macOS, and Windows systems. We recommend running it on a machine with at least 2 GB of RAM and 2 CPU cores (kubo is highly parallel). On systems with less memory, it may not be completely stable.
-
-If your system is resource-constrained, we recommend:
-
-1. Installing OpenSSL and rebuilding kubo manually with `make build GOTAGS=openssl`. See the [download and compile](#download-and-compile-ipfs) section for more information on compiling kubo.
-2. Initializing your daemon with `ipfs init --profile=lowpower`
 
 ### Docker
 
@@ -166,10 +166,16 @@ $ ipfs get /ipns/dist.ipfs.tech/kubo/$VERSION/kubo_$VERSION_windows-amd64.zip   
 
 ### Unofficial Linux packages
 
-- [Arch Linux](#arch-linux)
+<a href="https://repology.org/project/kubo/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/kubo.svg" alt="Packaging status" align="right">
+</a>
+
+- [ArchLinux](#arch-linux)
 - [Nix](#nix-linux)
 - [Solus](#solus)
 - [openSUSE](#opensuse)
+- [Guix](#guix)
+- [Snap](#snap)
 
 #### Arch Linux
 
@@ -186,18 +192,17 @@ $ ipfs get /ipns/dist.ipfs.tech/kubo/$VERSION/kubo_$VERSION_windows-amd64.zip   
 With the purely functional package manager [Nix](https://nixos.org/nix/) you can install kubo (go-ipfs) like this:
 
 ```
-$ nix-env -i ipfs
+$ nix-env -i kubo
 ```
 
-You can also install the Package by using its attribute name, which is also `ipfs`.
+You can also install the Package by using its attribute name, which is also `kubo`.
 
 #### Solus
 
-In solus, kubo (go-ipfs) is available in the main repository as
-[go-ipfs](https://dev.getsol.us/source/go-ipfs/repository/master/).
+[Package for Solus](https://dev.getsol.us/source/kubo/repository/master/)
 
 ```
-$ sudo eopkg install go-ipfs
+$ sudo eopkg install kubo
 ```
 
 You can also install it through the Solus software center.
@@ -208,30 +213,35 @@ You can also install it through the Solus software center.
 
 #### Guix
 
-GNU's functional package manager, [Guix](https://www.gnu.org/software/guix/), also provides a go-ipfs package:
-
-```
-$ guix package -i go-ipfs
-```
+[Community Package for go-ipfs](https://packages.guix.gnu.org/packages/go-ipfs/0.11.0/) is no out-of-date.
 
 #### Snap
 
-> ⚠️ **SNAP USE IS DISCOURAGED**
-> 
-> If you want something more sophisticated to escape the Snap confinement, we recommend using a different method to install Kubo so that it is not subject to snap confinement.
+No longer supported, see rationale in [kubo#8688](https://github.com/ipfs/kubo/issues/8688).
 
+### Unofficial Windows packages
 
-With snap, in any of the [supported Linux distributions](https://snapcraft.io/docs/core/install):
+- [Chocolatey](#chocolatey)
+- [Scoop](#scoop)
 
+#### Chocolatey
+
+No longer supported, see rationale in [kubo#9341](https://github.com/ipfs/kubo/issues/9341).
+
+#### Scoop
+
+Scoop provides kubo as `kubo` in its 'extras' bucket.
+
+```Powershell
+PS> scoop bucket add extras
+PS> scoop install kubo
 ```
-$ sudo snap install ipfs
-```
 
-The snap sets `IPFS_PATH` to `SNAP_USER_COMMON`, which is usually `~/snap/ipfs/common`. If you want to use `~/.ipfs` instead, you can bind-mount it to `~/snap/ipfs/common` like this:
+### Unofficial macOS packages
 
-```
-$ sudo mount --bind ~/.ipfs ~/snap/ipfs/common
-```
+- [MacPorts](#macports)
+- [Nix](#nix-macos)
+- [Homebrew](#homebrew)
 
 #### MacPorts
 
@@ -246,10 +256,10 @@ $ sudo port install ipfs
 In macOS you can use the purely functional package manager [Nix](https://nixos.org/nix/):
 
 ```
-$ nix-env -i ipfs
+$ nix-env -i kubo
 ```
 
-You can also install the Package by using its attribute name, which is also `ipfs`.
+You can also install the Package by using its attribute name, which is also `kubo`.
 
 #### Homebrew
 
@@ -258,35 +268,6 @@ A Homebrew formula [ipfs](https://formulae.brew.sh/formula/ipfs) is maintained t
 ```
 $ brew install --formula ipfs
 ```
-
-### Unofficial Windows packages
-
-- [Chocolatey](#chocolatey)
-- [Scoop](#scoop)
-
-#### Chocolatey
-
-[![Chocolatey Version](https://img.shields.io/chocolatey/v/go-ipfs?color=00a4ef&label=go-ipfs&logo=windows&style=flat-square&cacheSeconds=3600)](https://chocolatey.org/packages/go-ipfs)
-
-```Powershell
-PS> choco install go-ipfs
-```
-
-#### Scoop
-
-Scoop provides kubo as `go-ipfs` in its 'extras' bucket.
-
-```Powershell
-PS> scoop bucket add extras
-PS> scoop install go-ipfs
-```
-
-### Unofficial macOS packages
-
-- [MacPorts](#macports)
-- [Nix](#nix-macos)
-- [Homebrew](#homebrew)
-
 
 ### Build from Source
 
@@ -378,6 +359,10 @@ Basic proof of 'ipfs working' locally:
     # QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o
     ipfs cat <that hash>
 
+### HTTP/RPC clients
+
+For programmatic interaction with Kubo, see our [list of HTTP/RPC clients](docs/http-rpc-clients.md).
+
 ### Troubleshooting
 
 If you have previously installed IPFS before and you are running into problems getting a newer version to work, try deleting (or backing up somewhere else) your IPFS config directory (~/.ipfs by default) and rerunning `ipfs init`. This will reinitialize the config file to its defaults and clear out the local datastore of any bad entries.
@@ -400,7 +385,6 @@ Some places to get you started on the codebase:
 - libp2p
   - libp2p: https://github.com/libp2p/go-libp2p
   - DHT: https://github.com/libp2p/go-libp2p-kad-dht
-  - PubSub: https://github.com/libp2p/go-libp2p-pubsub
 - [IPFS : The `Add` command demystified](https://github.com/ipfs/kubo/tree/master/docs/add-code-flow.md)
 
 ### Map of Implemented Subsystems

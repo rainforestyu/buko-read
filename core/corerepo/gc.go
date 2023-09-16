@@ -11,9 +11,9 @@ import (
 	"github.com/ipfs/kubo/repo"
 
 	"github.com/dustin/go-humanize"
+	"github.com/ipfs/boxo/mfs"
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log"
-	"github.com/ipfs/go-mfs"
 )
 
 var log = logging.Logger("corerepo")
@@ -43,7 +43,6 @@ func NewGC(n *core.IpfsNode) (*GC, error) {
 		if err := r.SetConfigKey("Datastore.StorageMax", "10GB"); err != nil {
 			return nil, err
 		}
-		// 这里用了GB这种人容易理解的,后面就要用humanize去转换为byte
 		cfg.Datastore.StorageMax = "10GB"
 	}
 	if cfg.Datastore.StorageGCWatermark == 0 {
@@ -84,7 +83,6 @@ func BestEffortRoots(filesRoot *mfs.Root) ([]cid.Cid, error) {
 	return []cid.Cid{rootDag.Cid()}, nil
 }
 
-// GarbageCollect 垃圾收集过程,调用GC方法访问仓库
 func GarbageCollect(n *core.IpfsNode, ctx context.Context) error {
 	roots, err := BestEffortRoots(n.FilesRoot)
 	if err != nil {

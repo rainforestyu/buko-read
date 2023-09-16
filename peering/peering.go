@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/ipfs/go-log"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -201,7 +201,7 @@ func (ps *PeeringService) Start() error {
 	return nil
 }
 
-// GetState get the State of the PeeringService
+// GetState get the State of the PeeringService.
 func (ps *PeeringService) GetState() State {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
@@ -306,6 +306,7 @@ func (nn *netNotifee) Connected(_ network.Network, c network.Conn) {
 		go handler.stopIfConnected()
 	}
 }
+
 func (nn *netNotifee) Disconnected(_ network.Network, c network.Conn) {
 	ps := (*PeeringService)(nn)
 

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	options "github.com/ipfs/boxo/coreiface/options"
+	keystore "github.com/ipfs/boxo/keystore"
 	cmds "github.com/ipfs/go-ipfs-cmds"
-	keystore "github.com/ipfs/go-ipfs-keystore"
-	options "github.com/ipfs/interface-go-ipfs-core/options"
 	oldcmds "github.com/ipfs/kubo/commands"
 	config "github.com/ipfs/kubo/config"
 	cmdenv "github.com/ipfs/kubo/core/commands/cmdenv"
@@ -22,8 +22,8 @@ import (
 	ke "github.com/ipfs/kubo/core/commands/keyencode"
 	fsrepo "github.com/ipfs/kubo/repo/fsrepo"
 	migrations "github.com/ipfs/kubo/repo/fsrepo/migrations"
-	"github.com/libp2p/go-libp2p-core/crypto"
-	peer "github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
 var KeyCmd = &cmds.Command{
@@ -56,7 +56,7 @@ publish'.
 
 type KeyOutput struct {
 	Name string
-	Id   string
+	Id   string //nolint
 }
 
 type KeyOutputList struct {
@@ -67,7 +67,7 @@ type KeyOutputList struct {
 type KeyRenameOutput struct {
 	Was       string
 	Now       string
-	Id        string
+	Id        string //nolint
 	Overwrite bool
 }
 
@@ -118,7 +118,6 @@ var keyGenCmd = &cmds.Command{
 		}
 
 		key, err := api.Key().Generate(req.Context, name, opts...)
-
 		if err != nil {
 			return err
 		}
@@ -211,7 +210,6 @@ elsewhere. For example, using openssl to get a PEM with public key:
 			stdKey, err := crypto.PrivKeyToStdKey(sk)
 			if err != nil {
 				return fmt.Errorf("converting libp2p private key to std Go key: %w", err)
-
 			}
 			// For some reason the ed25519.PrivateKey does not use pointer
 			// receivers, so we need to convert it for MarshalPKCS8PrivateKey.
@@ -375,7 +373,6 @@ The PEM format allows for key generation outside of the IPFS node:
 			sk, _, err = crypto.KeyPairFromStdKey(stdKey)
 			if err != nil {
 				return fmt.Errorf("converting std Go key to libp2p key: %w", err)
-
 			}
 		case keyFormatLibp2pCleartextOption:
 			sk, err = crypto.UnmarshalPrivateKey(data)

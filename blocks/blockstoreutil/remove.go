@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	bs "github.com/ipfs/boxo/blockstore"
+	pin "github.com/ipfs/boxo/pinning/pinner"
 	cid "github.com/ipfs/go-cid"
-	bs "github.com/ipfs/go-ipfs-blockstore"
-	pin "github.com/ipfs/go-ipfs-pinner"
 	format "github.com/ipfs/go-ipld-format"
 )
 
@@ -41,7 +41,6 @@ func RmBlocks(ctx context.Context, blocks bs.GCBlockstore, pins pin.Pinner, cids
 	go func() {
 		defer close(out)
 
-		// 将上下文加锁
 		unlocker := blocks.GCLock(ctx)
 		defer unlocker.Unlock(ctx)
 

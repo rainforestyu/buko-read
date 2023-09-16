@@ -15,9 +15,9 @@ import (
 	mock "github.com/ipfs/kubo/core/mock"
 	libp2p2 "github.com/ipfs/kubo/core/node/libp2p"
 
-	corenet "github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peerstore"
 	testutil "github.com/libp2p/go-libp2p-testing/net"
+	corenet "github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peerstore"
 	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
 
 	ma "github.com/multiformats/go-multiaddr"
@@ -51,8 +51,10 @@ func TestDHTConnectivitySlowRouting(t *testing.T) {
 }
 
 // wan prefix must have a real corresponding ASN for the peer diversity filter to work.
-var wanPrefix = net.ParseIP("2001:218:3004::")
-var lanPrefix = net.ParseIP("fe80::")
+var (
+	wanPrefix = net.ParseIP("2001:218:3004::")
+	lanPrefix = net.ParseIP("fe80::")
+)
 
 func makeAddr(n uint32, wan bool) ma.Multiaddr {
 	var ip net.IP

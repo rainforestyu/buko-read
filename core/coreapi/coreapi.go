@@ -18,28 +18,29 @@ import (
 	"errors"
 	"fmt"
 
-	bserv "github.com/ipfs/go-blockservice"
-	"github.com/ipfs/go-fetcher"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	exchange "github.com/ipfs/go-ipfs-exchange-interface"
-	offlinexch "github.com/ipfs/go-ipfs-exchange-offline"
-	pin "github.com/ipfs/go-ipfs-pinner"
-	provider "github.com/ipfs/go-ipfs-provider"
-	offlineroute "github.com/ipfs/go-ipfs-routing/offline"
+	bserv "github.com/ipfs/boxo/blockservice"
+	blockstore "github.com/ipfs/boxo/blockstore"
+	coreiface "github.com/ipfs/boxo/coreiface"
+	"github.com/ipfs/boxo/coreiface/options"
+	exchange "github.com/ipfs/boxo/exchange"
+	offlinexch "github.com/ipfs/boxo/exchange/offline"
+	"github.com/ipfs/boxo/fetcher"
+	dag "github.com/ipfs/boxo/ipld/merkledag"
+	pathresolver "github.com/ipfs/boxo/path/resolver"
+	pin "github.com/ipfs/boxo/pinning/pinner"
+	provider "github.com/ipfs/boxo/provider"
+	offlineroute "github.com/ipfs/boxo/routing/offline"
 	ipld "github.com/ipfs/go-ipld-format"
-	dag "github.com/ipfs/go-merkledag"
-	coreiface "github.com/ipfs/interface-go-ipfs-core"
-	"github.com/ipfs/interface-go-ipfs-core/options"
-	ci "github.com/libp2p/go-libp2p-core/crypto"
-	p2phost "github.com/libp2p/go-libp2p-core/host"
-	peer "github.com/libp2p/go-libp2p-core/peer"
-	pstore "github.com/libp2p/go-libp2p-core/peerstore"
-	routing "github.com/libp2p/go-libp2p-core/routing"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	record "github.com/libp2p/go-libp2p-record"
+	ci "github.com/libp2p/go-libp2p/core/crypto"
+	p2phost "github.com/libp2p/go-libp2p/core/host"
+	peer "github.com/libp2p/go-libp2p/core/peer"
+	pstore "github.com/libp2p/go-libp2p/core/peerstore"
+	routing "github.com/libp2p/go-libp2p/core/routing"
 	madns "github.com/multiformats/go-multiaddr-dns"
 
-	"github.com/ipfs/go-namesys"
+	"github.com/ipfs/boxo/namesys"
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/node"
 	"github.com/ipfs/kubo/repo"
@@ -65,9 +66,11 @@ type CoreAPI struct {
 	recordValidator      record.Validator
 	exchange             exchange.Interface
 
-	namesys     namesys.NameSystem
-	routing     routing.Routing
-	dnsResolver *madns.Resolver
+	namesys            namesys.NameSystem
+	routing            routing.Routing
+	dnsResolver        *madns.Resolver
+	ipldPathResolver   pathresolver.Resolver
+	unixFSPathResolver pathresolver.Resolver
 
 	provider provider.System
 
@@ -144,6 +147,11 @@ func (api *CoreAPI) PubSub() coreiface.PubSubAPI {
 	return (*PubSubAPI)(api)
 }
 
+// Routing returns the RoutingAPI interface implementation backed by the kubo node
+func (api *CoreAPI) Routing() coreiface.RoutingAPI {
+	return (*RoutingAPI)(api)
+}
+
 // WithOptions returns api with global options applied
 func (api *CoreAPI) WithOptions(opts ...options.ApiOption) (coreiface.CoreAPI, error) {
 	settings := api.parentOpts // make sure to copy
@@ -158,7 +166,7 @@ func (api *CoreAPI) WithOptions(opts ...options.ApiOption) (coreiface.CoreAPI, e
 
 	n := api.nd
 
-	subApi := &CoreAPI{
+	subAPI := &CoreAPI{
 		nctx: n.Context(),
 
 		identity:   n.Identity,
@@ -174,13 +182,15 @@ func (api *CoreAPI) WithOptions(opts ...options.ApiOption) (coreiface.CoreAPI, e
 		ipldFetcherFactory:   n.IPLDFetcherFactory,
 		unixFSFetcherFactory: n.UnixFSFetcherFactory,
 
-		peerstore:       n.Peerstore,
-		peerHost:        n.PeerHost,
-		namesys:         n.Namesys,
-		recordValidator: n.RecordValidator,
-		exchange:        n.Exchange,
-		routing:         n.Routing,
-		dnsResolver:     n.DNSResolver,
+		peerstore:          n.Peerstore,
+		peerHost:           n.PeerHost,
+		namesys:            n.Namesys,
+		recordValidator:    n.RecordValidator,
+		exchange:           n.Exchange,
+		routing:            n.Routing,
+		dnsResolver:        n.DNSResolver,
+		ipldPathResolver:   n.IPLDPathResolver,
+		unixFSPathResolver: n.UnixFSPathResolver,
 
 		provider: n.Provider,
 
@@ -190,14 +200,14 @@ func (api *CoreAPI) WithOptions(opts ...options.ApiOption) (coreiface.CoreAPI, e
 		parentOpts: settings,
 	}
 
-	subApi.checkOnline = func(allowOffline bool) error {
+	subAPI.checkOnline = func(allowOffline bool) error {
 		if !n.IsOnline && !allowOffline {
 			return coreiface.ErrOffline
 		}
 		return nil
 	}
 
-	subApi.checkPublishAllowed = func() error {
+	subAPI.checkPublishAllowed = func() error {
 		if n.Mounts.Ipns != nil && n.Mounts.Ipns.IsActive() {
 			return errors.New("cannot manually publish while IPNS is mounted")
 		}
@@ -218,39 +228,39 @@ func (api *CoreAPI) WithOptions(opts ...options.ApiOption) (coreiface.CoreAPI, e
 			return nil, fmt.Errorf("cannot specify negative resolve cache size")
 		}
 
-		subApi.routing = offlineroute.NewOfflineRouter(subApi.repo.Datastore(), subApi.recordValidator)
+		subAPI.routing = offlineroute.NewOfflineRouter(subAPI.repo.Datastore(), subAPI.recordValidator)
 
-		subApi.namesys, err = namesys.NewNameSystem(subApi.routing,
-			namesys.WithDatastore(subApi.repo.Datastore()),
-			namesys.WithDNSResolver(subApi.dnsResolver),
+		subAPI.namesys, err = namesys.NewNameSystem(subAPI.routing,
+			namesys.WithDatastore(subAPI.repo.Datastore()),
+			namesys.WithDNSResolver(subAPI.dnsResolver),
 			namesys.WithCache(cs))
 		if err != nil {
 			return nil, fmt.Errorf("error constructing namesys: %w", err)
 		}
 
-		subApi.provider = provider.NewOfflineProvider()
+		subAPI.provider = provider.NewNoopProvider()
 
-		subApi.peerstore = nil
-		subApi.peerHost = nil
-		subApi.recordValidator = nil
+		subAPI.peerstore = nil
+		subAPI.peerHost = nil
+		subAPI.recordValidator = nil
 	}
 
 	if settings.Offline || !settings.FetchBlocks {
-		subApi.exchange = offlinexch.Exchange(subApi.blockstore)
-		subApi.blocks = bserv.New(subApi.blockstore, subApi.exchange)
-		subApi.dag = dag.NewDAGService(subApi.blocks)
+		subAPI.exchange = offlinexch.Exchange(subAPI.blockstore)
+		subAPI.blocks = bserv.New(subAPI.blockstore, subAPI.exchange)
+		subAPI.dag = dag.NewDAGService(subAPI.blocks)
 	}
 
-	return subApi, nil
+	return subAPI, nil
 }
 
 // getSession returns new api backed by the same node with a read-only session DAG
 func (api *CoreAPI) getSession(ctx context.Context) *CoreAPI {
-	sesApi := *api
+	sesAPI := *api
 
 	// TODO: We could also apply this to api.blocks, and compose into writable api,
 	// but this requires some changes in blockservice/merkledag
-	sesApi.dag = dag.NewReadOnlyDagService(dag.NewSession(ctx, api.dag))
+	sesAPI.dag = dag.NewReadOnlyDagService(dag.NewSession(ctx, api.dag))
 
-	return &sesApi
+	return &sesAPI
 }

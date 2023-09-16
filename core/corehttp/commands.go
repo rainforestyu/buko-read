@@ -9,23 +9,22 @@ import (
 	"strconv"
 	"strings"
 
-	version "github.com/ipfs/kubo"
-	oldcmds "github.com/ipfs/kubo/commands"
-	"github.com/ipfs/kubo/core"
-	corecommands "github.com/ipfs/kubo/core/commands"
-
+	path "github.com/ipfs/boxo/path"
 	cmds "github.com/ipfs/go-ipfs-cmds"
 	cmdsHttp "github.com/ipfs/go-ipfs-cmds/http"
-	path "github.com/ipfs/go-path"
+	version "github.com/ipfs/kubo"
+	oldcmds "github.com/ipfs/kubo/commands"
 	config "github.com/ipfs/kubo/config"
+	"github.com/ipfs/kubo/core"
+	corecommands "github.com/ipfs/kubo/core/commands"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-var (
-	errAPIVersionMismatch = errors.New("api version mismatch")
-)
+var errAPIVersionMismatch = errors.New("api version mismatch")
 
-const originEnvKey = "API_ORIGIN"
-const originEnvKeyDeprecate = `You are using the ` + originEnvKey + `ENV Variable.
+const (
+	originEnvKey          = "API_ORIGIN"
+	originEnvKeyDeprecate = `You are using the ` + originEnvKey + `ENV Variable.
 This functionality is deprecated, and will be removed in future versions.
 Instead, try either adding headers to the config, or passing them via
 cli arguments:
@@ -33,6 +32,7 @@ cli arguments:
 	ipfs config API.HTTPHeaders --json '{"Access-Control-Allow-Origin": ["*"]}'
 	ipfs daemon
 `
+)
 
 // APIPath is the path at which the API is mounted.
 const APIPath = "/api/v0"
@@ -100,7 +100,6 @@ func addCORSDefaults(c *cmdsHttp.ServerConfig) {
 }
 
 func patchCORSVars(c *cmdsHttp.ServerConfig, addr net.Addr) {
-
 	// we have to grab the port from an addr, which may be an ip6 addr.
 	// TODO: this should take multiaddrs and derive port from there.
 	port := ""
@@ -125,7 +124,6 @@ func patchCORSVars(c *cmdsHttp.ServerConfig, addr net.Addr) {
 
 func commandsOption(cctx oldcmds.Context, command *cmds.Command, allowGet bool) ServeOption {
 	return func(n *core.IpfsNode, l net.Listener, mux *http.ServeMux) (*http.ServeMux, error) {
-
 		cfg := cmdsHttp.NewServerConfig()
 		cfg.AllowGet = allowGet
 		corsAllowedMethods := []string{http.MethodPost}
@@ -146,6 +144,7 @@ func commandsOption(cctx oldcmds.Context, command *cmds.Command, allowGet bool) 
 		patchCORSVars(cfg, l.Addr())
 
 		cmdHandler := cmdsHttp.NewHandler(&cctx, command, cfg)
+		cmdHandler = otelhttp.NewHandler(cmdHandler, "corehttp.cmdsHandler")
 		mux.Handle(APIPath+"/", cmdHandler)
 		return mux, nil
 	}

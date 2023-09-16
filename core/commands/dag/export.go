@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb"
+	iface "github.com/ipfs/boxo/coreiface"
 	blocks "github.com/ipfs/go-block-format"
 	cid "github.com/ipfs/go-cid"
 	ipld "github.com/ipfs/go-ipld-format"
-	iface "github.com/ipfs/interface-go-ipfs-core"
 	"github.com/ipfs/kubo/core/commands/cmdenv"
 
 	cmds "github.com/ipfs/go-ipfs-cmds"
@@ -79,13 +79,12 @@ func dagExport(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment
 }
 
 func finishCLIExport(res cmds.Response, re cmds.ResponseEmitter) error {
-
 	var showProgress bool
 	val, specified := res.Request().Options[progressOptionName]
 	if !specified {
 		// default based on TTY availability
 		errStat, _ := os.Stderr.Stat()
-		if 0 != (errStat.Mode() & os.ModeCharDevice) {
+		if (errStat.Mode() & os.ModeCharDevice) != 0 {
 			showProgress = true
 		}
 	} else if val.(bool) {

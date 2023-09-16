@@ -8,10 +8,10 @@ import (
 	"github.com/ipfs/kubo/commands"
 	"github.com/ipfs/kubo/core"
 
+	coreiface "github.com/ipfs/boxo/coreiface"
+	options "github.com/ipfs/boxo/coreiface/options"
 	cmds "github.com/ipfs/go-ipfs-cmds"
 	logging "github.com/ipfs/go-log"
-	coreiface "github.com/ipfs/interface-go-ipfs-core"
-	options "github.com/ipfs/interface-go-ipfs-core/options"
 )
 
 var log = logging.Logger("core/commands/cmdenv")
@@ -27,7 +27,7 @@ func GetNode(env interface{}) (*core.IpfsNode, error) {
 }
 
 // GetApi extracts CoreAPI instance from the environment.
-func GetApi(env cmds.Environment, req *cmds.Request) (coreiface.CoreAPI, error) {
+func GetApi(env cmds.Environment, req *cmds.Request) (coreiface.CoreAPI, error) { //nolint
 	ctx, ok := env.(*commands.Context)
 	if !ok {
 		return nil, fmt.Errorf("expected env to be of type %T, got %T", ctx, env)

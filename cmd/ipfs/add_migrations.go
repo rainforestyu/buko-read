@@ -8,18 +8,18 @@ import (
 	"os"
 	"path/filepath"
 
-	files "github.com/ipfs/go-ipfs-files"
-	coreiface "github.com/ipfs/interface-go-ipfs-core"
-	"github.com/ipfs/interface-go-ipfs-core/options"
-	ipath "github.com/ipfs/interface-go-ipfs-core/path"
+	coreiface "github.com/ipfs/boxo/coreiface"
+	"github.com/ipfs/boxo/coreiface/options"
+	ipath "github.com/ipfs/boxo/coreiface/path"
+	"github.com/ipfs/boxo/files"
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/coreapi"
 	"github.com/ipfs/kubo/repo/fsrepo/migrations"
 	"github.com/ipfs/kubo/repo/fsrepo/migrations/ipfsfetcher"
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/peer"
 )
 
-// addMigrations adds any migration downloaded by the fetcher to the IPFS node
+// addMigrations adds any migration downloaded by the fetcher to the IPFS node.
 func addMigrations(ctx context.Context, node *core.IpfsNode, fetcher migrations.Fetcher, pin bool) error {
 	var fetchers []migrations.Fetcher
 	if mf, ok := fetcher.(*migrations.MultiFetcher); ok {
@@ -56,14 +56,14 @@ func addMigrations(ctx context.Context, node *core.IpfsNode, fetcher migrations.
 				}
 			}
 		default:
-			return errors.New("Cannot get migrations from unknown fetcher type")
+			return errors.New("cannot get migrations from unknown fetcher type")
 		}
 	}
 
 	return nil
 }
 
-// addMigrationFiles adds the files at paths to IPFS, optionally pinning them
+// addMigrationFiles adds the files at paths to IPFS, optionally pinning them.
 func addMigrationFiles(ctx context.Context, node *core.IpfsNode, paths []string, pin bool) error {
 	if len(paths) == 0 {
 		return nil
@@ -118,9 +118,9 @@ func addMigrationPaths(ctx context.Context, node *core.IpfsNode, peerInfo peer.A
 	fmt.Printf("connected to migration peer %q\n", peerInfo)
 
 	if pin {
-		pinApi := ipfs.Pin()
+		pinAPI := ipfs.Pin()
 		for _, ipfsPath := range paths {
-			err := pinApi.Add(ctx, ipfsPath)
+			err := pinAPI.Add(ctx, ipfsPath)
 			if err != nil {
 				return err
 			}

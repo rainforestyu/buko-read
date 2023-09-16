@@ -12,7 +12,7 @@ import (
 
 	cmds "github.com/ipfs/go-ipfs-cmds"
 	config "github.com/ipfs/kubo/config"
-	peer "github.com/libp2p/go-libp2p-core/peer"
+	peer "github.com/libp2p/go-libp2p/core/peer"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -374,9 +374,7 @@ func bootstrapRemove(r repo.Repo, cfg *config.Config, toRemove []string) ([]stri
 			removed = append(removed, p)
 			continue
 		}
-		var (
-			keptAddrs, removedAddrs []ma.Multiaddr
-		)
+		var keptAddrs, removedAddrs []ma.Multiaddr
 		// remove specific addresses
 	filter:
 		for _, addr := range p.Addrs {

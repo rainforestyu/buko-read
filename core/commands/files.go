@@ -14,18 +14,18 @@ import (
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/commands/cmdenv"
 
-	bservice "github.com/ipfs/go-blockservice"
+	bservice "github.com/ipfs/boxo/blockservice"
+	iface "github.com/ipfs/boxo/coreiface"
+	path "github.com/ipfs/boxo/coreiface/path"
+	offline "github.com/ipfs/boxo/exchange/offline"
+	dag "github.com/ipfs/boxo/ipld/merkledag"
+	ft "github.com/ipfs/boxo/ipld/unixfs"
+	mfs "github.com/ipfs/boxo/mfs"
 	cid "github.com/ipfs/go-cid"
 	cidenc "github.com/ipfs/go-cidutil/cidenc"
 	cmds "github.com/ipfs/go-ipfs-cmds"
-	offline "github.com/ipfs/go-ipfs-exchange-offline"
 	ipld "github.com/ipfs/go-ipld-format"
 	logging "github.com/ipfs/go-log"
-	dag "github.com/ipfs/go-merkledag"
-	mfs "github.com/ipfs/go-mfs"
-	ft "github.com/ipfs/go-unixfs"
-	iface "github.com/ipfs/interface-go-ipfs-core"
-	path "github.com/ipfs/interface-go-ipfs-core/path"
 	mh "github.com/multiformats/go-multihash"
 )
 
@@ -88,8 +88,10 @@ const (
 	filesHashOptionName       = "hash"
 )
 
-var cidVersionOption = cmds.IntOption(filesCidVersionOptionName, "cid-ver", "Cid version to use. (experimental)")
-var hashOption = cmds.StringOption(filesHashOptionName, "Hash function to use. Will set Cid version to 1 if used. (experimental)")
+var (
+	cidVersionOption = cmds.IntOption(filesCidVersionOptionName, "cid-ver", "Cid version to use. (experimental)")
+	hashOption       = cmds.StringOption(filesHashOptionName, "Hash function to use. Will set Cid version to 1 if used. (experimental)")
+)
 
 var errFormat = errors.New("format was set by multiple options. Only one format option is allowed")
 
@@ -131,7 +133,6 @@ var filesStatCmd = &cmds.Command{
 		cmds.BoolOption(filesWithLocalOptionName, "Compute the amount of the dag that is local, and if possible the total size"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-
 		_, err := statGetFormatOptions(req)
 		if err != nil {
 			return cmds.Errorf(cmds.ErrClient, err.Error())
@@ -225,7 +226,6 @@ func moreThanOne(a, b, c bool) bool {
 }
 
 func statGetFormatOptions(req *cmds.Request) (string, error) {
-
 	hash, _ := req.Options[filesHashOptionName].(bool)
 	size, _ := req.Options[filesSizeOptionName].(bool)
 	format, _ := req.Options[filesFormatOptionName].(string)
@@ -307,7 +307,6 @@ func walkBlock(ctx context.Context, dagserv ipld.DAGService, nd ipld.Node) (bool
 		}
 
 		childLocal, childLocalSize, err := walkBlock(ctx, dagserv, child)
-
 		if err != nil {
 			return local, sizeLocal, err
 		}
@@ -581,7 +580,7 @@ const (
 
 var filesReadCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
-		Tagline: "Read a file in a given MFS.",
+		Tagline: "Read a file from MFS.",
 		ShortDescription: `
 Read a specified number of bytes from a file at a given offset. By default,
 it will read the entire file similar to the Unix cat.
@@ -724,11 +723,16 @@ const (
 
 var filesWriteCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
-		Tagline: "Write to a mutable file in a given filesystem.",
+		Tagline: "Append to (modify) a file in MFS.",
 		ShortDescription: `
-Write data to a file in a given filesystem. This command allows you to specify
-a beginning offset to write to. The entire length of the input will be
-written.
+A low-level MFS command that allows you to append data to a file. If you want
+to add a file without modifying an existing one, use 'ipfs add --to-files'
+instead.
+`,
+		LongDescription: `
+A low-level MFS command that allows you to append data at the end of a file, or
+specify a beginning offset within a file to write to. The entire length of the
+input will be written.
 
 If the '--create' option is specified, the file will be created if it does not
 exist. Nonexistent intermediate directories will not be created unless the
@@ -755,6 +759,22 @@ WARNING:
 Usage of the '--flush=false' option does not guarantee data durability until
 the tree has been flushed. This can be accomplished by running 'ipfs files
 stat' on the file or any of its ancestors.
+
+WARNING:
+
+The CID produced by 'files write' will be different from 'ipfs add' because
+'ipfs file write' creates a trickle-dag optimized for append-only operations
+See '--trickle' in 'ipfs add --help' for more information.
+
+If you want to add a file without modifying an existing one,
+use 'ipfs add' with '--to-files':
+
+  > ipfs files mkdir -p /myfs/dir
+  > ipfs add example.jpg --to-files /myfs/dir/
+  > ipfs files ls /myfs/dir/
+  example.jpg
+
+See '--to-files' in 'ipfs add --help' for more information.
 `,
 	},
 	Arguments: []cmds.Argument{
@@ -1019,7 +1039,7 @@ func updatePath(rt *mfs.Root, pth string, builder cid.Builder) error {
 
 var filesRmCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
-		Tagline: "Remove a file.",
+		Tagline: "Remove a file from MFS.",
 		ShortDescription: `
 Remove files or directories.
 
@@ -1224,7 +1244,10 @@ func getFileHandle(r *mfs.Root, path string, create bool, builder cid.Builder) (
 		}
 
 		nd := dag.NodeWithData(ft.FilePBData(nil, 0))
-		nd.SetCidBuilder(builder)
+		err = nd.SetCidBuilder(builder)
+		if err != nil {
+			return nil, err
+		}
 		err = pdir.AddChild(fname, nd)
 		if err != nil {
 			return nil, err

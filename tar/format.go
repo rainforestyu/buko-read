@@ -8,21 +8,23 @@ import (
 	"io"
 	"strings"
 
-	dag "github.com/ipfs/go-merkledag"
-	"github.com/ipfs/go-merkledag/dagutils"
-	path "github.com/ipfs/go-path"
-	importer "github.com/ipfs/go-unixfs/importer"
-	uio "github.com/ipfs/go-unixfs/io"
+	dag "github.com/ipfs/boxo/ipld/merkledag"
+	"github.com/ipfs/boxo/ipld/merkledag/dagutils"
+	importer "github.com/ipfs/boxo/ipld/unixfs/importer"
+	uio "github.com/ipfs/boxo/ipld/unixfs/io"
+	path "github.com/ipfs/boxo/path"
 
-	chunker "github.com/ipfs/go-ipfs-chunker"
+	chunker "github.com/ipfs/boxo/chunker"
 	ipld "github.com/ipfs/go-ipld-format"
 	logging "github.com/ipfs/go-log"
 )
 
 var log = logging.Logger("tarfmt")
 
-var blockSize = 512
-var zeroBlock = make([]byte, blockSize)
+var (
+	blockSize = 512
+	zeroBlock = make([]byte, blockSize)
+)
 
 func marshalHeader(h *tar.Header) ([]byte, error) {
 	buf := new(bytes.Buffer)
@@ -91,7 +93,7 @@ func ImportTar(ctx context.Context, r io.Reader, ds ipld.DAGService) (*dag.Proto
 }
 
 // adds a '-' to the beginning of each path element so we can use 'data' as a
-// special link in the structure without having to worry about
+// special link in the structure without having to worry about.
 func escapePath(pth string) string {
 	elems := path.SplitList(strings.Trim(pth, "/"))
 	for i, e := range elems {
@@ -173,7 +175,7 @@ func (tr *tarReader) Read(b []byte) (int, error) {
 	tr.hdrBuf = bytes.NewReader(hndpb.Data())
 
 	dataNd, err := hndpb.GetLinkedProtoNode(tr.ctx, tr.ds, "data")
-	if err != nil && err != dag.ErrLinkNotFound {
+	if err != nil && !errors.Is(err, dag.ErrLinkNotFound) {
 		return 0, err
 	}
 

@@ -15,9 +15,9 @@ import (
 	p2p "github.com/ipfs/kubo/p2p"
 
 	cmds "github.com/ipfs/go-ipfs-cmds"
-	peer "github.com/libp2p/go-libp2p-core/peer"
-	pstore "github.com/libp2p/go-libp2p-core/peerstore"
-	protocol "github.com/libp2p/go-libp2p-core/protocol"
+	peer "github.com/libp2p/go-libp2p/core/peer"
+	pstore "github.com/libp2p/go-libp2p/core/peerstore"
+	protocol "github.com/libp2p/go-libp2p/core/protocol"
 	ma "github.com/multiformats/go-multiaddr"
 	madns "github.com/multiformats/go-multiaddr-dns"
 )
@@ -370,9 +370,7 @@ var p2pCloseCmd = &cmds.Command{
 
 		proto := protocol.ID(protoOpt)
 
-		var (
-			target, listen ma.Multiaddr
-		)
+		var target, listen ma.Multiaddr
 
 		if l {
 			listen, err = ma.NewMultiaddr(listenOpt)

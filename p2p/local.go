@@ -5,14 +5,14 @@ import (
 	"time"
 
 	tec "github.com/jbenet/go-temp-err-catcher"
-	net "github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/protocol"
+	net "github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	ma "github.com/multiformats/go-multiaddr"
-	"github.com/multiformats/go-multiaddr/net"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
-// localListener manet streams and proxies them to libp2p services
+// localListener manet streams and proxies them to libp2p services.
 type localListener struct {
 	ctx context.Context
 
@@ -25,7 +25,7 @@ type localListener struct {
 	listener manet.Listener
 }
 
-// ForwardLocal creates new P2P stream to a remote listener
+// ForwardLocal creates new P2P stream to a remote listener.
 func (p2p *P2P) ForwardLocal(ctx context.Context, peer peer.ID, proto protocol.ID, bindAddr ma.Multiaddr) (Listener, error) {
 	listener := &localListener{
 		ctx:   ctx,
@@ -52,7 +52,7 @@ func (p2p *P2P) ForwardLocal(ctx context.Context, peer peer.ID, proto protocol.I
 }
 
 func (l *localListener) dial(ctx context.Context) (net.Stream, error) {
-	cctx, cancel := context.WithTimeout(ctx, time.Second*30) //TODO: configurable?
+	cctx, cancel := context.WithTimeout(ctx, time.Second*30) // TODO: configurable?
 	defer cancel()
 
 	return l.p2p.peerHost.NewStream(cctx, l.peer, l.proto)
@@ -116,6 +116,6 @@ func (l *localListener) TargetAddress() ma.Multiaddr {
 	return addr
 }
 
-func (l *localListener) key() string {
-	return l.ListenAddress().String()
+func (l *localListener) key() protocol.ID {
+	return protocol.ID(l.ListenAddress().String())
 }

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"sync"
 
-	files "github.com/ipfs/go-ipfs-files"
-	icore "github.com/ipfs/interface-go-ipfs-core"
-	icorepath "github.com/ipfs/interface-go-ipfs-core/path"
+	icore "github.com/ipfs/boxo/coreiface"
+	icorepath "github.com/ipfs/boxo/coreiface/path"
+	"github.com/ipfs/boxo/files"
 	ma "github.com/multiformats/go-multiaddr"
 
 	"github.com/ipfs/kubo/config"
@@ -22,7 +22,7 @@ import (
 	"github.com/ipfs/kubo/core/node/libp2p"
 	"github.com/ipfs/kubo/plugin/loader" // This package is needed so that all the preloaded plugins are loaded automatically
 	"github.com/ipfs/kubo/repo/fsrepo"
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/peer"
 )
 
 /// ------ Setting up the IPFS Repo
@@ -85,7 +85,7 @@ func createTempRepo() (string, error) {
 
 /// ------ Spawning the node
 
-// Creates an IPFS node and returns its coreAPI
+// Creates an IPFS node and returns its coreAPI.
 func createNode(ctx context.Context, repoPath string) (*core.IpfsNode, error) {
 	// Open the repo
 	repo, err := fsrepo.Open(repoPath)
@@ -107,7 +107,7 @@ func createNode(ctx context.Context, repoPath string) (*core.IpfsNode, error) {
 
 var loadPluginsOnce sync.Once
 
-// Spawns a node to be used just for this run (i.e. creates a tmp repo)
+// Spawns a node to be used just for this run (i.e. creates a tmp repo).
 func spawnEphemeral(ctx context.Context) (icore.CoreAPI, *core.IpfsNode, error) {
 	var onceErr error
 	loadPluginsOnce.Do(func() {
